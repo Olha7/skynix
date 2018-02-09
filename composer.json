@@ -14,8 +14,6 @@
         "php": "~5.5.0|~5.6.0|~7.0.0"
     },
     "autoload": {
-        "files": [ "library/Zend/Db/Adapter/Abstract.php",
-                    "library/Zend/Db/Adapter/Pdo/Mysql.php",
-                    "library/Zend/Db/Adapter/Pdo/Abstract.php"]
+        "files": [ "library/Zend/Db/Adapter/Abstract.php" ]
     }
 }
