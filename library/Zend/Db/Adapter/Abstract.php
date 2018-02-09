@@ -49,6 +49,7 @@ abstract class Zend_Db_Adapter_Abstract
      * @var array
      */
     protected $_config = array();
+    protected $slaveConfig;
 
     /**
      * Fetch mode
@@ -459,9 +460,11 @@ abstract class Zend_Db_Adapter_Abstract
         if( strripos($sql, 'SELECT') !== false ) {
 
             //connection to Slave server
+            var_dump('_connectSlave');
             $this->_connectSlave();
             
         } else {
+            var_dump('_connect');
             // connect to the database if needed
             $this->_connect();
         }
