@@ -163,9 +163,6 @@ abstract class Zend_Db_Adapter_Abstract
      */
     public function __construct($config)
     {
-        
-        var_dump('Activeans');
-        exit();
         /*
          * Verify that adapter parameters are in an array.
          */
@@ -459,8 +456,16 @@ abstract class Zend_Db_Adapter_Abstract
      */
     public function query($sql, $bind = array())
     {
-        // connect to the database if needed
-        $this->_connect();
+        if( strripos($sql, 'SELECT') !== false ) {
+
+            //connection to Slave server
+            $this->_connectSlave();
+            
+        } else {
+            // connect to the database if needed
+            $this->_connect();
+        }
+
 
         // is the $sql a Zend_Db_Select object?
         if ($sql instanceof Zend_Db_Select) {
@@ -484,6 +489,7 @@ abstract class Zend_Db_Adapter_Abstract
 
         // return the results embedded in the prepared statement object
         $stmt->setFetchMode($this->_fetchMode);
+
         return $stmt;
     }
 
@@ -1194,6 +1200,7 @@ abstract class Zend_Db_Adapter_Abstract
      */
     abstract protected function _connect();
 
+    abstract protected function _connectSlave();
     /**
      * Test if a connection is active
      *
