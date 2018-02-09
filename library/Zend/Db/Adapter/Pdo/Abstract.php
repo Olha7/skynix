@@ -105,7 +105,7 @@ abstract class Zend_Db_Adapter_Pdo_Abstract extends Zend_Db_Adapter_Abstract
         return $this->_pdoType . ':' . implode(';', $dsn);
     }
     
-    protected function _connectSlave()
+    public function _connectSlave()
     {
         var_dump('_connectSlave lib PDO Abstract');
         // if we already have a PDO object, no need to re-connect.

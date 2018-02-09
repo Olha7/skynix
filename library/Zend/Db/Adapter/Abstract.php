@@ -461,10 +461,12 @@ abstract class Zend_Db_Adapter_Abstract
 
             //connection to Slave server
             var_dump('_connectSlave');
+            exit();
             $this->_connectSlave();
             
         } else {
             var_dump('_connect');
+            exit();
             // connect to the database if needed
             $this->_connect();
         }
@@ -494,6 +496,14 @@ abstract class Zend_Db_Adapter_Abstract
         $stmt->setFetchMode($this->_fetchMode);
 
         return $stmt;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function _connectSlave()
+    {
+
     }
 
     /**
@@ -1203,7 +1213,6 @@ abstract class Zend_Db_Adapter_Abstract
      */
     abstract protected function _connect();
 
-    abstract protected function _connectSlave();
     /**
      * Test if a connection is active
      *

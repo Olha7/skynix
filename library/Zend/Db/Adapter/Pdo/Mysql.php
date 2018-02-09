@@ -95,7 +95,7 @@ class Zend_Db_Adapter_Pdo_Mysql extends Zend_Db_Adapter_Pdo_Abstract
      * @return void
      * @throws Zend_Db_Adapter_Exception
      */
-    protected function _connectSlave()
+    public function _connectSlave()
     {
         var_dump('_connectSlave lib Mysql');
 
