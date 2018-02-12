@@ -97,9 +97,20 @@ class Zend_Db_Adapter_Pdo_Mysql extends Zend_Db_Adapter_Pdo_Abstract
      */
     public function _connectSlave()
     {
-        var_dump('_connectSlave lib Mysql');
+        //var_dump('_connectSlave lib Mysql');
 
-        if ($this->_connection) {
+        if( isset($this->_config['slave-servers']) ) {
+
+            $this->slaveConfig = $this->_config['slave-servers']['slave1'];
+            unset($this->_config['slave-server']);
+            
+        } else {
+
+            $this->slaveConfig = $this->_config;
+
+        }
+
+        if ($this->_connectionSlave) {
             return;
         }
 
@@ -121,7 +132,7 @@ class Zend_Db_Adapter_Pdo_Mysql extends Zend_Db_Adapter_Pdo_Abstract
      */
     protected function _connect()
     {
-        var_dump('_connect lib Mysql');
+        //var_dump('_connect lib Mysql');
 
         if ($this->_connection) {
             return;

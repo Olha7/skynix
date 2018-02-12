@@ -62,6 +62,9 @@ abstract class Zend_Db_Adapter_Pdo_Abstract extends Zend_Db_Adapter_Abstract
         // baseline of DSN parts
         $dsn = $this->_config;
 
+        if ( isset($this->_config['slave-servers']) ) {
+            unset($dsn['slave-servers']);
+        }
         // don't pass the username, password, charset, persistent and driver_options in the DSN
         unset($dsn['username']);
         unset($dsn['password']);
@@ -69,7 +72,6 @@ abstract class Zend_Db_Adapter_Pdo_Abstract extends Zend_Db_Adapter_Abstract
         unset($dsn['charset']);
         unset($dsn['persistent']);
         unset($dsn['driver_options']);
-
         // use all remaining parts in the DSN
         foreach ($dsn as $key => $val) {
             $dsn[$key] = "$key=$val";
@@ -84,11 +86,8 @@ abstract class Zend_Db_Adapter_Pdo_Abstract extends Zend_Db_Adapter_Abstract
      */
     protected function _dsnSlave()
     {
-        var_dump('_dsnSlave lib PDO Abstract');
-
         // baseline of DSN parts
         $dsn = $this->slaveConfig;
-
         // don't pass the username, password, charset, persistent and driver_options in the DSN
         unset($dsn['username']);
         unset($dsn['password']);
@@ -96,7 +95,6 @@ abstract class Zend_Db_Adapter_Pdo_Abstract extends Zend_Db_Adapter_Abstract
         unset($dsn['charset']);
         unset($dsn['persistent']);
         unset($dsn['driver_options']);
-
         // use all remaining parts in the DSN
         foreach ($dsn as $key => $val) {
             $dsn[$key] = "$key=$val";
@@ -106,13 +104,13 @@ abstract class Zend_Db_Adapter_Pdo_Abstract extends Zend_Db_Adapter_Abstract
     }
     
     public function _connectSlave()
-    {
-        var_dump('_connectSlave lib PDO Abstract');
+    {       
+        //var_dump('_connectSlave lib PDO Abstract');
         // if we already have a PDO object, no need to re-connect.
-        if ($this->_connection) {
+        if ($this->_connectionSlave) {
             return;
         }
-
+       
         // get the dsn first, because some adapters alter the $_pdoType
         $dsn = $this->_dsnSlave();
 
@@ -141,9 +139,11 @@ abstract class Zend_Db_Adapter_Pdo_Abstract extends Zend_Db_Adapter_Abstract
         if (isset($this->slaveConfig['persistent']) && ($this->slaveConfig['persistent'] == true)) {
             $this->slaveConfig['driver_options'][PDO::ATTR_PERSISTENT] = true;
         }
-
+        if (!isset($this->slaveConfig['driver_options'][\PDO::MYSQL_ATTR_MULTI_STATEMENTS])) {
+            $this->slaveConfig['driver_options'][\PDO::MYSQL_ATTR_MULTI_STATEMENTS] = false;
+        }
         try {
-            $this->_connection = new PDO(
+            $this->_connectionSlave = new PDO(
                 $dsn,
                 $this->slaveConfig['username'],
                 $this->slaveConfig['password'],
@@ -153,10 +153,10 @@ abstract class Zend_Db_Adapter_Pdo_Abstract extends Zend_Db_Adapter_Abstract
             $this->_profiler->queryEnd($q);
 
             // set the PDO connection to perform case-folding on array keys, or not
-            $this->_connection->setAttribute(PDO::ATTR_CASE, $this->_caseFolding);
+            $this->_connectionSlave->setAttribute(PDO::ATTR_CASE, $this->_caseFolding);
 
             // always use exceptions.
-            $this->_connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            $this->_connectionSlave->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
         } catch (PDOException $e) {
             /**
@@ -177,7 +177,7 @@ abstract class Zend_Db_Adapter_Pdo_Abstract extends Zend_Db_Adapter_Abstract
      */
     protected function _connect()
     {
-        var_dump('_connect lib PDO Abstract');
+        //var_dump('_connect lib PDO Abstract');
 
         // if we already have a PDO object, no need to re-connect.
         if ($this->_connection) {

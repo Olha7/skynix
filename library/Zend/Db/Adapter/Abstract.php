@@ -87,6 +87,7 @@ abstract class Zend_Db_Adapter_Abstract
      */
     protected $_connection = null;
 
+    public $_connectionSlave = null;
     /**
      * Specifies the case of column names retrieved in queries
      * Options
@@ -217,10 +218,10 @@ abstract class Zend_Db_Adapter_Abstract
             $config['persistent'] = false;
         }
 
+
         $this->_config = array_merge($this->_config, $config);
         $this->_config['options'] = $options;
-        $this->_config['driver_options'] = $driverOptions;
-
+        $this->_config['driver_options'] = $driverOptions;        
 
         // obtain the case setting, if there is one
         if (array_key_exists(Zend_Db::CASE_FOLDING, $options)) {
@@ -457,20 +458,16 @@ abstract class Zend_Db_Adapter_Abstract
      */
     public function query($sql, $bind = array())
     {
-        if( strripos($sql, 'SELECT') !== false ) {
+        if( strripos($sql, 'SELECT') !== false ) {           
 
             //connection to Slave server
-            var_dump('_connectSlave');
-            exit();
+            //var_dump('_connectSlave');
             $this->_connectSlave();
             
         } else {
-            var_dump('_connect');
-            exit();
-            // connect to the database if needed
+            //var_dump('_connect');
             $this->_connect();
         }
-
 
         // is the $sql a Zend_Db_Select object?
         if ($sql instanceof Zend_Db_Select) {
@@ -503,7 +500,7 @@ abstract class Zend_Db_Adapter_Abstract
      */
     public function _connectSlave()
     {
-
+        
     }
 
     /**
