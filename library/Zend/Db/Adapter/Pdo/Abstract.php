@@ -79,96 +79,7 @@ abstract class Zend_Db_Adapter_Pdo_Abstract extends Zend_Db_Adapter_Abstract
 
         return $this->_pdoType . ':' . implode(';', $dsn);
     }
-    /**
-     * Creates a PDO DSN for the adapter from $this->slaveConfig settings.
-     *
-     * @return string
-     */
-    protected function _dsnSlave()
-    {
-        // baseline of DSN parts
-        $dsn = $this->slaveConfig;
-        // don't pass the username, password, charset, persistent and driver_options in the DSN
-        unset($dsn['username']);
-        unset($dsn['password']);
-        unset($dsn['options']);
-        unset($dsn['charset']);
-        unset($dsn['persistent']);
-        unset($dsn['driver_options']);
-        // use all remaining parts in the DSN
-        foreach ($dsn as $key => $val) {
-            $dsn[$key] = "$key=$val";
-        }
 
-        return $this->_pdoType . ':' . implode(';', $dsn);
-    }
-    
-    public function _connectSlave()
-    {       
-        //var_dump('_connectSlave lib PDO Abstract');
-        // if we already have a PDO object, no need to re-connect.
-        if ($this->_connectionSlave) {
-            return;
-        }
-       
-        // get the dsn first, because some adapters alter the $_pdoType
-        $dsn = $this->_dsnSlave();
-
-        // check for PDO extension
-        if (!extension_loaded('pdo')) {
-            /**
-             * @see Zend_Db_Adapter_Exception
-             */
-            #require_once 'Zend/Db/Adapter/Exception.php';
-            throw new Zend_Db_Adapter_Exception('The PDO extension is required for this adapter but the extension is not loaded');
-        }
-
-        // check the PDO driver is available
-        if (!in_array($this->_pdoType, PDO::getAvailableDrivers())) {
-            /**
-             * @see Zend_Db_Adapter_Exception
-             */
-            #require_once 'Zend/Db/Adapter/Exception.php';
-            throw new Zend_Db_Adapter_Exception('The ' . $this->_pdoType . ' driver is not currently installed');
-        }
-
-        // create PDO connection
-        $q = $this->_profiler->queryStart('connect', Zend_Db_Profiler::CONNECT);
-
-        // add the persistence flag if we find it in our config array
-        if (isset($this->slaveConfig['persistent']) && ($this->slaveConfig['persistent'] == true)) {
-            $this->slaveConfig['driver_options'][PDO::ATTR_PERSISTENT] = true;
-        }
-        if (!isset($this->slaveConfig['driver_options'][\PDO::MYSQL_ATTR_MULTI_STATEMENTS])) {
-            $this->slaveConfig['driver_options'][\PDO::MYSQL_ATTR_MULTI_STATEMENTS] = false;
-        }
-        try {
-            $this->_connectionSlave = new PDO(
-                $dsn,
-                $this->slaveConfig['username'],
-                $this->slaveConfig['password'],
-                $this->slaveConfig['driver_options']
-            );
-
-            $this->_profiler->queryEnd($q);
-
-            // set the PDO connection to perform case-folding on array keys, or not
-            $this->_connectionSlave->setAttribute(PDO::ATTR_CASE, $this->_caseFolding);
-
-            // always use exceptions.
-            $this->_connectionSlave->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-        } catch (PDOException $e) {
-            /**
-             * @see Zend_Db_Adapter_Exception
-             */
-            #require_once 'Zend/Db/Adapter/Exception.php';
-            throw new Zend_Db_Adapter_Exception($e->getMessage(), $e->getCode(), $e);
-        }
-    }
-    
-    
-    
     /**
      * Creates a PDO object and connects to the database.
      *
@@ -177,8 +88,6 @@ abstract class Zend_Db_Adapter_Pdo_Abstract extends Zend_Db_Adapter_Abstract
      */
     protected function _connect()
     {
-        //var_dump('_connect lib PDO Abstract');
-
         // if we already have a PDO object, no need to re-connect.
         if ($this->_connection) {
             return;

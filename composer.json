@@ -15,8 +15,7 @@
     },
     "autoload": {
         "files": [ "library/Zend/Db/Adapter/Abstract.php",
-                   "library/Zend/Db/Adapter/Pdo/Abstract.php",
-                   "library/Zend/Db/Adapter/Pdo/Mysql.php"
+                   "library/Zend/Db/Adapter/Pdo/Abstract.php"
         ]
     }
 }
