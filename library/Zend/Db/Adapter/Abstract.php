@@ -451,6 +451,40 @@ abstract class Zend_Db_Adapter_Abstract
     }
 
     /**
+     * Prepares and executes an SQL SELECT statement with bound data.
+     *
+     * @param  mixed  $sql  The SQL statement with placeholders.
+     *                      May be a string or Zend_Db_Select.
+     * @param  mixed  $bind An array of data to bind to the placeholders.
+     * @return Zend_Db_Statement_Interface
+     */
+    public function querySelect($sql, $bind = array())
+    {
+        $this->_connect();
+        // is the $sql a Zend_Db_Select object?
+        if ($sql instanceof Zend_Db_Select) {
+            if (empty($bind)) {
+                $bind = $sql->getBind();
+            }
+
+            $sql = $sql->assemble();
+        }
+        // make sure $bind to an array;
+        // don't use (array) typecasting because
+        // because $bind may be a Zend_Db_Expr object
+        if (!is_array($bind)) {
+            $bind = array($bind);
+        }
+        // prepare and execute the statement with profiling
+        $stmt = $this->prepare($sql);
+        $stmt->execute($bind);
+
+        // return the results embedded in the prepared statement object
+        $stmt->setFetchMode($this->_fetchMode);
+
+        return $stmt;
+    }
+    /**
      * Prepares and executes an SQL statement with bound data.
      *
      * @param  mixed  $sql  The SQL statement with placeholders.
@@ -462,15 +496,15 @@ abstract class Zend_Db_Adapter_Abstract
     {
         if( strripos($sql, 'SELECT') !== false ) {
 
-            //connection to Slave server
-            //var_dump('_connectSlave');
-            $this->_connectionSlave = $this->_connection;
-            $this->_connectionSlave = null;
-            $this->_connectSlave();
+            $config = $this->_connectSlave();
+
+            $db = Zend_Db::factory('Pdo_Mysql', $config);
+
+            return $db->querySelect($sql, $bind = array());
             
-        } else {
-            $this->_connect();
         }
+            $this->_connect();
+
         // is the $sql a Zend_Db_Select object?
         if ($sql instanceof Zend_Db_Select) {
             if (empty($bind)) {
@@ -520,6 +554,7 @@ abstract class Zend_Db_Adapter_Abstract
      */
     public function _connectSlave()
     {
+
         if( isset($this->_config['slave-servers']) ) {
 
             $this->slaveConfig = $this->_config['slave-servers']['slave1'];
@@ -537,9 +572,6 @@ abstract class Zend_Db_Adapter_Abstract
             $this->slaveConfig['driver_options'][1002] = $initCommand; // 1002 = PDO::MYSQL_ATTR_INIT_COMMAND
         }
 
-        if ($this->_connectionSlave) {
-            return;
-        }
         // get the dsn first, because some adapters alter the $_pdoType
         $dsn = $this->_dsnSlave();
 
@@ -571,29 +603,7 @@ abstract class Zend_Db_Adapter_Abstract
         if (!isset($this->slaveConfig['driver_options'][\PDO::MYSQL_ATTR_MULTI_STATEMENTS])) {
             $this->slaveConfig['driver_options'][\PDO::MYSQL_ATTR_MULTI_STATEMENTS] = false;
         }
-        try {
-            $this->_connection = new PDO(
-                $dsn,
-                $this->slaveConfig['username'],
-                $this->slaveConfig['password'],
-                $this->slaveConfig['driver_options']
-            );
-
-            $this->_profiler->queryEnd($q);
-
-            // set the PDO connection to perform case-folding on array keys, or not
-            $this->_connection->setAttribute(PDO::ATTR_CASE, $this->_caseFolding);
-
-            // always use exceptions.
-            $this->_connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-        } catch (PDOException $e) {
-            /**
-             * @see Zend_Db_Adapter_Exception
-             */
-            #require_once 'Zend/Db/Adapter/Exception.php';
-            throw new Zend_Db_Adapter_Exception($e->getMessage(), $e->getCode(), $e);
-        }
+        return $this->slaveConfig;
     }
 
     /**
