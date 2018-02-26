@@ -1,0 +1,26 @@
+{
+    "name": "skynix/library-zend",
+    "type": "library",
+    "license": "OSL-3.0",
+    "description": "Test",
+    "keywords": ["magento2"],
+    "authors": [
+        {
+            "name": "Olha Hrybuk",
+            "email": "olha@skynix.co"
+        }
+    ],
+    "require": {
+        "php": "~5.5.0|~5.6.0|~7.0.0"
+    },
+    "autoload": {
+        "files": [ "library/Zend/Db/Adapter/Abstract.php",
+                   "library/Zend/Db/Adapter/Pdo/Abstract.php",
+                   "library/Zend/Db/Adapter/Pdo/Mysql.php"
+        ],
+        "psr-4": {
+            "Magento\\Framework\\": "library/Magento/Framework/"
+        }
+    }
+}
+
